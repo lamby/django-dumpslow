@@ -1,0 +1,103 @@
+# Django settings for example project.
+
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+ADMINS = (
+    # ('Your Name', 'your_email@domain.com'),
+)
+
+MANAGERS = ADMINS
+
+DATABASE_ENGINE = ''           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_NAME = ''             # Or path to database file if using sqlite3.
+DATABASE_USER = ''             # Not used with sqlite3.
+DATABASE_PASSWORD = ''         # Not used with sqlite3.
+DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
+DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+
+# Local time zone for this installation. Choices can be found here:
+# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# although not all choices may be available on all operating systems.
+# If running in a Windows environment this must be set to the same as your
+# system time zone.
+TIME_ZONE = 'America/Chicago'
+
+# Language code for this installation. All choices can be found here:
+# http://www.i18nguy.com/unicode/language-identifiers.html
+LANGUAGE_CODE = 'en-us'
+
+SITE_ID = 1
+
+# If you set this to False, Django will make some optimizations so as not
+# to load the internationalization machinery.
+USE_I18N = True
+
+# Absolute path to the directory that holds media.
+# Example: "/home/media/media.lawrence.com/"
+MEDIA_ROOT = ''
+
+# URL that handles the media served from MEDIA_ROOT. Make sure to use a
+# trailing slash if there is a path component (optional in other cases).
+# Examples: "http://media.lawrence.com", "http://example.com/media/"
+MEDIA_URL = ''
+
+# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
+# trailing slash.
+# Examples: "http://foo.com/media/", "/media/".
+ADMIN_MEDIA_PREFIX = '/media/'
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = '^hx*32ty@5fe(uas%vw_w&-s$+o%i^(jk%2me)bqqr8ise)5br'
+
+# List of callables that know how to import templates from various sources.
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.load_template_source',
+    'django.template.loaders.app_directories.load_template_source',
+#     'django.template.loaders.eggs.load_template_source',
+)
+
+MIDDLEWARE_CLASSES = (
+    'django_dumpslow.middleware.LogLongRequestMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+)
+
+ROOT_URLCONF = 'urls'
+
+TEMPLATE_DIRS = (
+    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+)
+
+import sys
+from os.path import abspath, dirname
+sys.path.insert(0, dirname(dirname(abspath(__file__))))
+
+INSTALLED_APPS = (
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django_dumpslow',
+    'example',
+)
+
+
+import django_dumpslow
+from os.path import abspath, dirname, join
+
+# How long a request has to take to be considered too long. Default is 1 second.
+# LONG_REQUEST_TIME = 0.5
+
+# Set the default location to parse dumpslow logfiles from
+LONG_REQUEST_LOG = join(dirname(dirname(abspath(__file__))), 'slow-requests.log')
+
+# Setup a default logger; you'll need this if you are currently not using
+# the Python logging framework. If you are already using it and you do not
+# wish to pollute your current log, bear in mind that django-dumpslow logs
+# to the 'dumpslow' logger.
+import logging
+logging.basicConfig(filename=LONG_REQUEST_LOG, level=logging.DEBUG)

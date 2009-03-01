@@ -1,0 +1,32 @@
+<html>
+<head>
+<title>django-dumpslow demo</title>
+<style type="text/css">
+body {
+	width: 600px;
+	text-align: justify;
+	padding: 4em;
+}
+h1 {
+	margin-bottom: 1.5em;
+}
+h2 {
+	border-bottom: 1px solid black;
+}
+pre, .html {
+	background-color: #EEEEEE;
+	padding: 1.5em;
+}
+</style>
+</head>
+<body>
+
+<h1>django-dumpslow demo</h1>
+
+<h2>Artificially slow page</h2>
+<ul>
+  <li><a href="{% url slow %}">A page that calls <tt>time.sleep(2)</tt></a></li>
+</ul>
+
+</body>
+</html>
