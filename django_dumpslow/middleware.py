@@ -16,17 +16,21 @@
 
 import time
 import logging
+import threading
 
 from django.conf import settings
 
 from django_dumpslow.signals import long_request
 
 class LogLongRequestMiddleware(object):
+    def __init__(self):
+        self.local = threading.local()
+
     def process_request(self, request):
-        self.start_time = time.time()
+        self.local.start_time = time.time()
 
     def process_response(self, request, response):
-        time_taken = time.time() - self.start_time
+        time_taken = time.time() - self.local.start_time
 
         try:
             max_time = settings.LONG_REQUEST_TIME
