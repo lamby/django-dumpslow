@@ -85,6 +85,8 @@ INSTALLED_APPS = (
     'example',
 )
 
+######################
+
 import django_dumpslow
 from os.path import abspath, dirname, join
 
@@ -93,6 +95,8 @@ from os.path import abspath, dirname, join
 
 # Set the glob to read logfiles from
 LONG_REQUEST_LOGS = join(dirname(dirname(abspath(__file__))), 'slow-requests.log*')
+
+######################
 
 # Setup a default logger; you'll need this if you are currently not using
 # the Python logging framework. If you are already using it and you do not
