@@ -21,6 +21,7 @@ import time
 import datetime
 import fileinput
 
+from glob import glob
 from operator import itemgetter
 from optparse import make_option
 
@@ -58,15 +59,15 @@ class Command(BaseCommand):
         if not files:
             # If no logfiles are specified, try and use the default logfile name
             try:
-                filename = settings.LONG_REQUEST_LOG
-                if os.path.exists(filename):
-                    files.append(filename)
+                for filename in glob(settings.LONG_REQUEST_LOGS):
+                    if os.path.exists(filename):
+                        files.append(filename)
             except AttributeError:
                 pass
 
         if not files:
             raise CommandError(
-                'No files specified and LONG_REQUEST_LOG target does not exist.'
+                'No files specified and LONG_REQUEST_LOGS target does not exist.'
             )
 
         def check_option(name, val):

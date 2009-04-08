@@ -85,19 +85,21 @@ INSTALLED_APPS = (
     'example',
 )
 
-
 import django_dumpslow
 from os.path import abspath, dirname, join
 
 # How long a request has to take to be considered too long. Default is 1 second.
 # LONG_REQUEST_TIME = 0.5
 
-# Set the default location to parse dumpslow logfiles from
-LONG_REQUEST_LOG = join(dirname(dirname(abspath(__file__))), 'slow-requests.log')
+# Set the glob to read logfiles from
+LONG_REQUEST_LOGS = join(dirname(dirname(abspath(__file__))), 'slow-requests.log*')
 
 # Setup a default logger; you'll need this if you are currently not using
 # the Python logging framework. If you are already using it and you do not
 # wish to pollute your current log, bear in mind that django-dumpslow logs
 # to the 'dumpslow' logger.
 import logging
-logging.basicConfig(filename=LONG_REQUEST_LOG, level=logging.DEBUG)
+logging.basicConfig(
+    filename=join(dirname(dirname(abspath(__file__))), 'slow-requests.log'),
+    level=logging.DEBUG
+)
