@@ -123,7 +123,16 @@ class Command(BaseCommand):
             try:
                 func, args, kwargs = \
                     resolve(match.group('url'), urlconf=settings.ROOT_URLCONF)
-                view = "%s.%s" % (func.__module__, func.__name__)
+
+                view = "%s." % func.__module__
+
+                try:
+                    view += func.__name__
+                except AttributeError:
+                    # Some view functions (eg. class-based views) do not have a
+                    # __name__ attribute; try and get the name of its class
+                    view += func.__class__.__name__
+
             except Resolver404:
                 view = '%s (unreversible url)' % match.group('url')
 
