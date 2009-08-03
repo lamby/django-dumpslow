@@ -128,7 +128,7 @@ class Command(BaseCommand):
 
                 try:
                     view += func.__name__
-                except AttributeError:
+                except (AttributeError, TypeError):
                     # Some view functions (eg. class-based views) do not have a
                     # __name__ attribute; try and get the name of its class
                     view += func.__class__.__name__
