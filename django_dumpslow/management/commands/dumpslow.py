@@ -26,10 +26,6 @@ from django.core.management.base import NoArgsCommand, CommandError
 
 from django_dumpslow.utils import parse_interval
 
-INTERVAL_MATCH = re.compile(
-    r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?!,\d{3})?',
-)
-
 class Command(NoArgsCommand):
     help = "Parse and summarize the django-dumpslow slow request log"
 
