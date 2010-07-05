@@ -17,13 +17,14 @@
 import re
 import redis
 import time
-import datetime
 
 from operator import itemgetter
 from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import NoArgsCommand, CommandError
+
+from django_dumpslow.utils import parse_interval
 
 INTERVAL_MATCH = re.compile(
     r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?!,\d{3})?',
@@ -65,7 +66,7 @@ class Command(NoArgsCommand):
         after = options['after']
         if after:
             try:
-                interval = self.parse_interval(after)
+                interval = parse_interval(after)
                 after = int(time.time()) - \
                     (interval.days * 86400) - interval.seconds
             except ValueError:
@@ -127,19 +128,3 @@ class Command(NoArgsCommand):
                 print ("%2.2f" % duration).rjust(pad)
             elif order == 'count':
                 print str(duration).rjust(pad)
-
-    @classmethod
-    def parse_interval(cls, val):
-        match = re.match(r'^(\d+)([smhdwy])$', val)
-        if not match:
-            raise ValueError()
-
-        unit = {
-            's': 'seconds',
-            'm': 'minutes',
-            'h': 'hours',
-            'd': 'days',
-            'w': 'weeks',
-        }[match.group(2)]
-
-        return datetime.timedelta(**{unit: int(match.group(1))})
