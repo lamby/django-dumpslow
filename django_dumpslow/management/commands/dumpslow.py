@@ -14,35 +14,28 @@
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
 
-import os
 import re
+import redis
 import time
 import datetime
-import fileinput
 
-from glob import glob
 from operator import itemgetter
 from optparse import make_option
 
 from django.conf import settings
-from django.core.urlresolvers import resolve, Resolver404
-from django.core.management.base import BaseCommand, CommandError
-
-REQUEST_MATCH = re.compile(
-    r'Long request - (?P<duration>[^s]+)s (?P<url>.*)',
-)
+from django.core.management.base import NoArgsCommand, CommandError
 
 INTERVAL_MATCH = re.compile(
     r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?!,\d{3})?',
 )
 
-class Command(BaseCommand):
+class Command(NoArgsCommand):
     help = "Parse and summarize the django-dumpslow slow request log"
 
-    option_list = BaseCommand.option_list + (
+    option_list = NoArgsCommand.option_list + (
         make_option('-s', dest='order', metavar='ORDER', default='at',
             help="what to sort by (at, count) (default: at)"),
-        make_option('-i', dest='after', metavar='INTERVAL', default=None,
+        make_option('-i', dest='after', metavar='INTERVAL', default=0,
             help="interval to report on (eg. 3d 1w 1y) (default: all)"),
         make_option('-r', dest='reverse', default=False, action='store_true',
             help="reverse the sort order (largest last instead of first)"),
@@ -52,23 +45,7 @@ class Command(BaseCommand):
             help="ignore entries over SECS seconds (default: 20)"),
     )
 
-    def handle(self, *args, **options):
-        files = list(args)
-
-        if not files:
-            # If no logfiles are specified, try and use the default logfile name
-            try:
-                for filename in glob(settings.LONG_REQUEST_LOGS):
-                    if os.path.exists(filename):
-                        files.append(filename)
-            except AttributeError:
-                pass
-
-        if not files:
-            raise CommandError(
-                'No files specified and LONG_REQUEST_LOGS target does not exist.'
-            )
-
+    def handle(self, **options):
         def check_option(name, val):
             try:
                 val = int(val)
@@ -88,8 +65,9 @@ class Command(BaseCommand):
         after = options['after']
         if after:
             try:
-                after = datetime.datetime.now() - \
-                    self.parse_interval(after)
+                interval = self.parse_interval(after)
+                after = int(time.time()) - \
+                    (interval.days * 86400) - interval.seconds
             except ValueError:
                 raise CommandError('Invalid interval %r' % after)
 
@@ -97,47 +75,22 @@ class Command(BaseCommand):
         if order not in ('at', 'count'):
             raise CommandError('Invalid sort order %r' % options['order'])
 
+        client = redis.Redis(
+            host=settings.REDIS_HOST,
+            port=settings.REDIS_PORT,
+        )
+
         data = {}
-        for line in fileinput.input(files):
-            match = REQUEST_MATCH.search(line)
-            if not match:
-                continue
+        results = client.zrangebyscore(
+            getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'), after, '+inf',
+        )
 
-            if after:
-                interval_match = INTERVAL_MATCH.search(line)
-                if not interval_match:
-                    raise CommandError(
-                        'You specified a time interval, but not all "long '
-                        'request" log lines have a valid time:\n%r' % line[:-1]
-                    )
+        for line in results:
+            view, duration = line.split('\n', 1)
 
-                timeobj = datetime.datetime(*time.strptime(
-                    interval_match.group(1),
-                    "%Y-%m-%d %H:%M:%S"[0:6],
-                ))
+            duration = float(duration)
 
-                if after and timeobj < after:
-                    continue
-
-            try:
-                func, args, kwargs = \
-                    resolve(match.group('url'), urlconf=settings.ROOT_URLCONF)
-
-                view = "%s." % func.__module__
-
-                try:
-                    view += func.__name__
-                except (AttributeError, TypeError):
-                    # Some view functions (eg. class-based views) do not have a
-                    # __name__ attribute; try and get the name of its class
-                    view += func.__class__.__name__
-
-            except Resolver404:
-                view = '%s (unreversible url)' % match.group('url')
-
-            duration = float(match.group('duration'))
-
-            if max_duration and duration >= max:
+            if max_duration and duration >= max_duration:
                 continue
 
             if order == 'at':
@@ -156,7 +109,7 @@ class Command(BaseCommand):
         del data
         items.sort(key=itemgetter(1), reverse=not options['reverse'])
 
-        if limit:
+        if limit is not None:
             items = items[:limit]
 
         print "", "View",
