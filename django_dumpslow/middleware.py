@@ -35,9 +35,7 @@ class LogLongRequestMiddleware(object):
         if time_taken < max_time:
             return response
 
-        url = request.META['PATH_INFO']
-
         log = logging.getLogger('dumpslow')
-        log.warning('Long request - %.3fs %s', time_taken, url)
+        log.warning('Long request - %.3fs %s', time_taken, request.path)
 
         return response
