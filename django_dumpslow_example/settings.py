@@ -89,3 +89,6 @@ INSTALLED_APPS = (
 
 # How long a request has to take to be considered too long. Default is 1 second.
 # DUMPSLOW_LONG_REQUEST_TIME = 0.5
+
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
