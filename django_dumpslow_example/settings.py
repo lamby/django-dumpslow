@@ -88,4 +88,4 @@ INSTALLED_APPS = (
 ######################
 
 # How long a request has to take to be considered too long. Default is 1 second.
-# LONG_REQUEST_TIME = 0.5
+# DUMPSLOW_LONG_REQUEST_TIME = 0.5
