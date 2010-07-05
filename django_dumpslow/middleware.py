@@ -34,18 +34,20 @@ class LogLongRequestMiddleware(object):
 
         max_time = getattr(settings, 'LONG_REQUEST_TIME', 1)
 
-        if time_taken > max_time:
-            url = request.META['PATH_INFO']
+        if time_taken < max_time:
+            return response
 
-            log = logging.getLogger('dumpslow')
-            log.warning('Long request - %.3fs %s', time_taken, url)
+        url = request.META['PATH_INFO']
 
-            long_request.send(
-                sender=request,
-                url=url,
-                request=request,
-                response=response,
-                time_taken=time_taken,
-            )
+        log = logging.getLogger('dumpslow')
+        log.warning('Long request - %.3fs %s', time_taken, url)
+
+        long_request.send(
+            sender=request,
+            url=url,
+            request=request,
+            response=response,
+            time_taken=time_taken,
+        )
 
         return response
