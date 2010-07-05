@@ -30,9 +30,7 @@ class LogLongRequestMiddleware(object):
     def process_response(self, request, response):
         time_taken = time.time() - self.local.start_time
 
-        max_time = getattr(settings, 'LONG_REQUEST_TIME', 1)
-
-        if time_taken < max_time:
+        if time_taken < getattr(settings, 'LONG_REQUEST_TIME', 1):
             return response
 
         log = logging.getLogger('dumpslow')
