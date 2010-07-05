@@ -20,8 +20,6 @@ import threading
 
 from django.conf import settings
 
-from django_dumpslow.signals import long_request
-
 class LogLongRequestMiddleware(object):
     def __init__(self):
         self.local = threading.local()
@@ -41,13 +39,5 @@ class LogLongRequestMiddleware(object):
 
         log = logging.getLogger('dumpslow')
         log.warning('Long request - %.3fs %s', time_taken, url)
-
-        long_request.send(
-            sender=request,
-            url=url,
-            request=request,
-            response=response,
-            time_taken=time_taken,
-        )
 
         return response
