@@ -96,3 +96,6 @@ REDIS_PORT = 6379
 # Name of the redis key to store data in. Use this if you share your redis
 # instance between Django projects using dumpslow.
 # DUMPSLOW_REDIS_KEY = 'dumpslow'
+
+# Delete dumpslow entries that are older than the specified interval
+# DUMPSLOW_DELETE_AFTER = '4w'

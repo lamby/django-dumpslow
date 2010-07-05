@@ -20,6 +20,8 @@ import threading
 
 from django.conf import settings
 
+from django_dumpslow.utils import parse_interval
+
 class LogLongRequestMiddleware(object):
     def __init__(self):
         self.local = threading.local()
@@ -52,6 +54,18 @@ class LogLongRequestMiddleware(object):
             getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'),
             '%s\n%.3f' % (self.local.view, time_taken),
             self.local.start_time,
+        )
+
+        # Clean up old values
+
+        delete_after = parse_interval(
+            getattr(settings, 'DUMPSLOW_DELETE_AFTER', '4w'),
+        )
+
+        client.zremrangebyscore(
+            getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'),
+            0,
+            int(time.time()) - delete_after,
         )
 
         return response
