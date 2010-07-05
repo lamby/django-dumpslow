@@ -15,8 +15,8 @@
 #    documentation and/or other materials provided with the distribution.
 
 import re
-import redis
 import time
+import redis
 
 from operator import itemgetter
 from optparse import make_option
