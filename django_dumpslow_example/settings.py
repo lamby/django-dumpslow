@@ -92,3 +92,7 @@ INSTALLED_APPS = (
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
+
+# Name of the redis key to store data in. Use this if you share your redis
+# instance between Django projects using dumpslow.
+# DUMPSLOW_REDIS_KEY = 'dumpslow'
