@@ -40,7 +40,13 @@ class LogLongRequestMiddleware(object):
         self.local.start_time = time.time()
 
     def process_response(self, request, response):
-        time_taken = time.time() - self.local.start_time
+        try:
+            view = self.local.view
+            time_taken = time.time() - self.local.start_time
+        except AttributeError:
+            # If, for whatever reason, the variables are not available, don't
+            # do anything else.
+            return response
 
         if time_taken < getattr(settings, 'DUMPSLOW_LONG_REQUEST_TIME', 1):
             return response
@@ -52,7 +58,7 @@ class LogLongRequestMiddleware(object):
 
         client.zadd(
             getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'),
-            '%s\n%.3f' % (self.local.view, time_taken),
+            '%s\n%.3f' % (view, time_taken),
             self.local.start_time,
         )
 
