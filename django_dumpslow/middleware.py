@@ -32,10 +32,7 @@ class LogLongRequestMiddleware(object):
     def process_response(self, request, response):
         time_taken = time.time() - self.local.start_time
 
-        try:
-            max_time = settings.LONG_REQUEST_TIME
-        except AttributeError:
-            max_time = 1
+        max_time = getattr(settings, 'LONG_REQUEST_TIME', 1)
 
         if time_taken > max_time:
             url = request.META['PATH_INFO']
