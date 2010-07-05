@@ -15,7 +15,7 @@
 #    documentation and/or other materials provided with the distribution.
 
 import time
-import logging
+import redis
 import threading
 
 from django.conf import settings
@@ -24,16 +24,34 @@ class LogLongRequestMiddleware(object):
     def __init__(self):
         self.local = threading.local()
 
-    def process_request(self, request):
+    def process_view(self, request, callback, callback_args, callback_kwargs):
+        view = '%s.' % callback.__module__
+
+        try:
+            view += callback.__name__
+        except (AttributeError, TypeError):
+            # Some view functions (eg. class-based views) do not have a
+            # __name__ attribute; try and get the name of its class
+            view += callback.__class__.__name__
+
+        self.local.view = view
         self.local.start_time = time.time()
 
     def process_response(self, request, response):
         time_taken = time.time() - self.local.start_time
 
-        if time_taken < getattr(settings, 'LONG_REQUEST_TIME', 1):
+        if time_taken < getattr(settings, 'DUMPSLOW_LONG_REQUEST_TIME', 1):
             return response
 
-        log = logging.getLogger('dumpslow')
-        log.warning('Long request - %.3fs %s', time_taken, request.path)
+        client = redis.Redis(
+            host=settings.REDIS_HOST,
+            port=settings.REDIS_PORT,
+        )
+
+        client.zadd(
+            getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'),
+            '%s\n%.3f' % (self.local.view, time_taken),
+            self.local.start_time,
+        )
 
         return response
