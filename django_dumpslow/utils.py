@@ -14,4 +14,6 @@ def parse_interval(val):
         'w': 'weeks',
     }[match.group(2)]
 
-    return datetime.timedelta(**{unit: int(match.group(1))})
+    td = datetime.timedelta(**{unit: int(match.group(1))})
+
+    return (td.days * 86400) + td.seconds

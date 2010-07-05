@@ -62,9 +62,7 @@ class Command(NoArgsCommand):
         after = options['after']
         if after:
             try:
-                interval = parse_interval(after)
-                after = int(time.time()) - \
-                    (interval.days * 86400) - interval.seconds
+                after = int(time.time()) - parse_interval(after)
             except ValueError:
                 raise CommandError('Invalid interval %r' % after)
 
