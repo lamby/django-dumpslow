@@ -1,2 +1,3 @@
 *.pyc
 slow-requests.log
+django_dumpslow.egg-info
