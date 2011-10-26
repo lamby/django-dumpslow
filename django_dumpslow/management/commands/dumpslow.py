@@ -31,7 +31,7 @@ class Command(NoArgsCommand):
 
     option_list = NoArgsCommand.option_list + (
         make_option('-s', dest='order', metavar='ORDER', default='at',
-            help="what to sort by (at, count) (default: at)"),
+            help="what to sort by (at, count, average) (default: at)"),
         make_option('-i', dest='after', metavar='INTERVAL', default=0,
             help="interval to report on (eg. 3d 1w 1y) (default: all)"),
         make_option('-r', dest='reverse', default=False, action='store_true',
@@ -39,7 +39,7 @@ class Command(NoArgsCommand):
         make_option('-t', dest='limit', default=None, metavar='NUM',
             help="just show the top NUM queries"),
         make_option('-m', dest='max_duration', metavar='SECS', default=20,
-            help="ignore entries over SECS seconds (default: 20)"),
+            help="ignore entries over SECS seconds (default: 20)")
     )
 
     def handle(self, **options):
@@ -67,7 +67,7 @@ class Command(NoArgsCommand):
                 raise CommandError('Invalid interval %r' % after)
 
         order = options['order']
-        if order not in ('at', 'count'):
+        if order not in ('at', 'count', 'average'):
             raise CommandError('Invalid sort order %r' % options['order'])
 
         client = redis.Redis(
@@ -76,9 +76,12 @@ class Command(NoArgsCommand):
         )
 
         data = {}
+        totals = {}
+        hits = {}
         results = client.zrangebyscore(
             getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'), after, '+inf',
         )
+        print results
 
         for line in results:
             view, duration = line.split('\n', 1)
@@ -100,6 +103,17 @@ class Command(NoArgsCommand):
                 except KeyError:
                     data[view] = 1
 
+            elif order == 'average':
+                try:
+                    totals[view] += duration
+                    hits[view] += 1
+                except KeyError:
+                    totals[view] = duration
+                    hits[view] = 1
+
+                data[view] = totals[view] / hits[view]
+
+
         items = data.items()
         del data
         items.sort(key=itemgetter(1), reverse=not options['reverse'])
@@ -111,14 +125,17 @@ class Command(NoArgsCommand):
         print {
             'count': 'Count',
             'at': 'Accumulated time',
+            'average': 'Average time',
         }[order].rjust(66)
         print "", "=" * 71
 
-        for view, duration in items:
+        for view, value in items:
             pad = 70 - len(view)
 
             print "", view,
             if order == 'at':
-                print ("%2.2f" % duration).rjust(pad)
+                print ("%2.2f" % value).rjust(pad)
             elif order == 'count':
-                print str(duration).rjust(pad)
+                print str(value).rjust(pad)
+            elif order == 'average':
+                print ("%2.2f" % value).rjust(pad)
