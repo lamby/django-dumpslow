@@ -81,7 +81,6 @@ class Command(NoArgsCommand):
         results = client.zrangebyscore(
             getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'), after, '+inf',
         )
-        print results
 
         for line in results:
             view, duration = line.split('\n', 1)
