@@ -19,5 +19,14 @@ example.views.slow                             92.88
 /unknown (unreversible url)                    16.84
 django-dumpslow ships with an example project that demonstrates its functionality.
 
-Licence
+
+Installation
+1. Get redis working in django, it's required. You'll need a redis server running and REDIS_HOST and REDIS_PORT set in settings.py
+2. Add the following to INSTALLED_APPS in settings.py:
+	'django_dumpslow'
+3. Add the following to MIDDLEWARE_CLASSES in settings.py:
+    'django_dumpslow.middleware.LogLongRequestMiddleware' # preferably at the top so it starts the timer early
+
+
+License
 django-dumpslow is released under the BSD license.
