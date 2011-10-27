@@ -19,6 +19,7 @@ import redis
 import threading
 
 from django.conf import settings
+from django.core.mail import mail_admins
 
 from django_dumpslow.utils import parse_interval
 
@@ -73,5 +74,10 @@ class LogLongRequestMiddleware(object):
             0,
             int(time.time()) - delete_after,
         )
+
+        # If it was really slow, email admins. Disabled by default.
+        email_threshold = getattr(settings, 'DUMPSLOW_EMAIL_REQUEST_TIME', -1)
+        if email_threshold > -1 and time_taken > email_threshold:
+            mail_admins("SLOW PAGE: %s" % request.path, "This page took %2.2f seconds to render, which is over the threshold of %s.\n\n%s" % (time_taken, email_threshold, str(request)) )
 
         return response
