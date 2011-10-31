@@ -4,7 +4,7 @@
 # django-dumpslow -- Django application to log and summarize slow requests
 #                    <http://chris-lamb.co.uk/projects/django-dumpslow>
 #
-# Copyright © 2009-2010 Chris Lamb <chris@chris-lamb.co.uk>
+# Copyright © 2009-2011 Chris Lamb <chris@chris-lamb.co.uk>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
