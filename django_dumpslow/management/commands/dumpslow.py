@@ -39,7 +39,7 @@ class Command(NoArgsCommand):
         make_option('-t', dest='limit', default=None, metavar='NUM',
             help="just show the top NUM queries"),
         make_option('-m', dest='max_duration', metavar='SECS', default=20,
-            help="ignore entries over SECS seconds (default: 20)")
+            help="ignore entries over SECS seconds (default: 20)"),
     )
 
     def handle(self, **options):
