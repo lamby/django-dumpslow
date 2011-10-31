@@ -1,32 +1,51 @@
 From: http://chris-lamb.co.uk/projects/django-dumpslow/
 
-django-dumpslow is a reusable Django application that logs requests that take a long time to execute and provides an tool to summarise the resulting data.
+django-dumpslow is a reusable Django application that logs requests that take a
+long time to execute and provides an tool to summarise the resulting data.
 
-Modelled on mysqldumpslow, django-dumpslow is intended as a tool to determine which parts of a project might benefit most from optimisation and to provide valuable empirical data.
+Modelled on mysqldumpslow, django-dumpslow is intended as a tool to determine
+which parts of a project might benefit most from optimisation and to provide
+valuable empirical data.
 
-The tool groups requests that are similar by exploiting Django's ability to reverse URLs - requests that that use the same view should not counted distinctly. Views can then be grouped by the total accumulated time spent by that view or simply by their raw frequency in the logs.
+The tool groups requests that are similar by exploiting Django's ability to
+reverse URLs - requests that that use the same view should not counted
+distinctly. Views can then be grouped by the total accumulated time spent by
+that view or simply by their raw frequency in the logs.
 
-Additionally, if the log entries contain timestamps then django-dumpslow can limit queries by a user-defined interval. This can be useful for generating regular reports of slow pages, perhaps by regularly emailing them to a development list.
+Additionally, if the log entries contain timestamps then django-dumpslow can
+limit queries by a user-defined interval. This can be useful for generating
+regular reports of slow pages, perhaps by regularly emailing them to a
+development list.
 
-Data is stored in Redis to allow easy collation of data from multiple front-end servers (django-dumpslow requires the Redis Python client library).
+Data is stored in Redis to allow easy collation of data from multiple front-end
+servers (django-dumpslow requires the Redis Python client library).
 
 An example output is:
 
-$ ./manage.py dumpslow
-View                                Accumulated time
-=====================================================
-example.views.slow                             92.88
-/unknown (unreversible url)                    16.84
-django-dumpslow ships with an example project that demonstrates its functionality.
+  $ ./manage.py dumpslow
+  View                                Accumulated time
+  =====================================================
+  example.views.slow                             92.88
+  /unknown (unreversible url)                    16.84
 
+django-dumpslow ships with an example project that demonstrates its
+functionality.
 
 Installation
-1. Get redis working in django, it's required. You'll need a redis server running and REDIS_HOST and REDIS_PORT set in settings.py
-2. Add the following to INSTALLED_APPS in settings.py:
-	'django_dumpslow'
-3. Add the following to MIDDLEWARE_CLASSES in settings.py:
-    'django_dumpslow.middleware.LogLongRequestMiddleware' # preferably at the top so it starts the timer early
+------------
 
+1. Get Dedis working in django, it's required. You'll need a redis server
+   running and REDIS_HOST and REDIS_PORT set in settings.py
+
+2. Add the following to INSTALLED_APPS in settings.py::
+  
+     'django_dumpslow'
+
+3. Add the following to MIDDLEWARE_CLASSES in settings.py::
+
+    'django_dumpslow.middleware.LogLongRequestMiddleware'
 
 License
+-------
+
 django-dumpslow is released under the BSD license.
