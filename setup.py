@@ -16,7 +16,7 @@
 #    documentation and/or other materials provided with the distribution.
 
 setup_args = dict(
-    name='django_dumpslow',
+    name='django-dumpslow',
     license='BSD',
     homepage='http://chris-lamb.co.uk/projects/django-dumpslow',
     packages=(
