@@ -17,7 +17,7 @@
 
 setup_args = dict(
     name='django-dumpslow',
-    version=1,
+    version='2',
     license='BSD',
     url='https://chris-lamb.co.uk/projects/django-dumpslow',
     packages=(
