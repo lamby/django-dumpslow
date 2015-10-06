@@ -19,7 +19,7 @@ setup_args = dict(
     name='django-dumpslow',
     version=1,
     license='BSD',
-    homepage='http://chris-lamb.co.uk/projects/django-dumpslow',
+    url='https://chris-lamb.co.uk/projects/django-dumpslow',
     packages=(
         'django_dumpslow',
         'django_dumpslow.management',
@@ -27,6 +27,7 @@ setup_args = dict(
     ),
     author='Chris Lamb',
     author_email='chris@chris-lamb.co.uk',
+    description="Django application to log and summarize slow requests",
 )
 
 try:
