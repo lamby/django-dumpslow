@@ -28,6 +28,10 @@ setup_args = dict(
     author='Chris Lamb',
     author_email='chris@chris-lamb.co.uk',
     description="Django application to log and summarize slow requests",
+
+    install_requires=(
+        'Django>=1.8',
+    ),
 )
 
 try:
