@@ -17,7 +17,7 @@
 
 setup_args = dict(
     name='django-dumpslow',
-    version='2.0.2',
+    version='2.0.3',
     license='BSD',
     url='https://chris-lamb.co.uk/projects/django-dumpslow',
     packages=(
@@ -30,7 +30,9 @@ setup_args = dict(
     description="Django application to log and summarize slow requests",
 
     install_requires=(
-        'Django>=1.8',
+        'Django>=1.11',
+        'redis>=3.0',
+        'tabulate',
     ),
 )
 

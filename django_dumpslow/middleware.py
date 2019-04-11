@@ -21,12 +21,15 @@ import threading
 
 from django.conf import settings
 from django.core.mail import mail_admins
+from django.utils.deprecation import MiddlewareMixin
 
 from django_dumpslow.utils import parse_interval
 
-class LogLongRequestMiddleware(object):
-    def __init__(self):
+class LogLongRequestMiddleware(MiddlewareMixin):
+    
+    def __init__(self, get_response=None):
         self.local = threading.local()
+        super().__init__(get_response=get_response)
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
         view = '%s.' % callback.__module__
@@ -58,10 +61,11 @@ class LogLongRequestMiddleware(object):
             port=settings.REDIS_PORT,
         )
 
+        map_key = '%s\n%.3f' % (view, time_taken)
+        mapping = { map_key: self.local.start_time }
         client.zadd(
             getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'),
-            '%s\n%.3f' % (view, time_taken),
-            self.local.start_time,
+            mapping,
         )
 
         # Clean up old values
@@ -77,7 +81,7 @@ class LogLongRequestMiddleware(object):
         )
 
         # If it was really slow, email admins. Disabled by default.
-        email_threshold = getattr(settings, 'DUMPSLOW_EMAIL_REQUEST_TIME', sys.maxint)
+        email_threshold = getattr(settings, 'DUMPSLOW_EMAIL_REQUEST_TIME', sys.maxsize)
         if time_taken > email_threshold:
             mail_admins(
                 "SLOW PAGE: %s" % request.path,

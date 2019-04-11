@@ -17,30 +17,41 @@
 import re
 import time
 import redis
+from tabulate import tabulate
 
 from operator import itemgetter
 from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError
 
 from django_dumpslow.utils import parse_interval
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = "Parse and summarize the django-dumpslow slow request log"
 
-    option_list = NoArgsCommand.option_list + (
-        make_option('-s', dest='order', metavar='ORDER', default='at',
-            help="what to sort by (at, count, average) (default: at)"),
-        make_option('-i', dest='after', metavar='INTERVAL', default=0,
-            help="interval to report on (eg. 3d 1w 1y) (default: all)"),
-        make_option('-r', dest='reverse', default=False, action='store_true',
-            help="reverse the sort order (largest last instead of first)"),
-        make_option('-t', dest='limit', default=None, metavar='NUM',
-            help="just show the top NUM queries"),
-        make_option('-m', dest='max_duration', metavar='SECS', default=20,
-            help="ignore entries over SECS seconds (default: 20)"),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('-s',
+            dest='order',
+            default='at',
+            help='what to sort by (at, count, average) (default: at)')
+        parser.add_argument('-i',
+            dest='after',
+            default=0,
+            help='interval to report on (eg. 3d 1w 1y) (default: all)')
+        parser.add_argument('-r',
+            action='store_true',
+            dest='reverse',
+            default=False,
+            help='reverse the sort order (largest last instead of first)')
+        parser.add_argument('-t',
+            dest='limit',
+            default=None,
+            help='just show the top NUM queries')
+        parser.add_argument('-m',
+            dest='max_duration',
+            default=20,
+            help='ignore entries over SECS seconds (default: 20)')
 
     def handle(self, **options):
         def check_option(name, val):
@@ -76,65 +87,31 @@ class Command(NoArgsCommand):
         )
 
         data = {}
-        totals = {}
-        hits = {}
         results = client.zrangebyscore(
             getattr(settings, 'DUMPSLOW_REDIS_KEY', 'dumpslow'), after, '+inf',
         )
 
         for line in results:
-            view, duration = line.split('\n', 1)
+            view, duration = line.split(b'\n', 1)
 
             duration = float(duration)
 
             if max_duration and duration >= max_duration:
                 continue
 
-            if order == 'at':
-                try:
-                    data[view] += duration
-                except KeyError:
-                    data[view] = duration
+            try:
+                data[view]['at'] += duration
+                data[view]['count'] += 1
+            except KeyError:
+                data[view] = {'at': duration, 'count': 1 }
+                
+            data[view]['average'] = data[view]['at'] / data[view]['count']
 
-            elif order == 'count':
-                try:
-                    data[view] += 1
-                except KeyError:
-                    data[view] = 1
-
-            elif order == 'average':
-                try:
-                    totals[view] += duration
-                    hits[view] += 1
-                except KeyError:
-                    totals[view] = duration
-                    hits[view] = 1
-
-                data[view] = totals[view] / hits[view]
-
-
-        items = data.items()
+        items = sorted(data.items(), key=lambda item: item[1][order], reverse=not options['reverse'])
         del data
-        items.sort(key=itemgetter(1), reverse=not options['reverse'])
 
         if limit is not None:
             items = items[:limit]
 
-        print "", "View",
-        print {
-            'count': 'Count',
-            'at': 'Accumulated time',
-            'average': 'Average time',
-        }[order].rjust(66)
-        print "", "=" * 71
-
-        for view, value in items:
-            pad = 70 - len(view)
-
-            print "", view,
-            if order == 'at':
-                print ("%2.2f" % value).rjust(pad)
-            elif order == 'count':
-                print str(value).rjust(pad)
-            elif order == 'average':
-                print ("%2.2f" % value).rjust(pad)
+        headers=['View', 'Count', 'Accumulated time', 'Average time']
+        print(tabulate([[view, values['count'], values['average'], values['at']] for view, values in items], headers=headers))
