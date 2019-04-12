@@ -114,4 +114,4 @@ class Command(BaseCommand):
             items = items[:limit]
 
         headers=['View', 'Count', 'Accumulated time', 'Average time']
-        print(tabulate([[view, values['count'], values['average'], values['at']] for view, values in items], headers=headers))
+        print(tabulate([[view, values['count'], values['at'], values['average']] for view, values in items], headers=headers))
