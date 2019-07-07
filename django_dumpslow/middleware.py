@@ -26,7 +26,6 @@ from django.utils.deprecation import MiddlewareMixin
 from django_dumpslow.utils import parse_interval
 
 class LogLongRequestMiddleware(MiddlewareMixin):
-    
     def __init__(self, get_response=None):
         self.local = threading.local()
         super().__init__(get_response=get_response)
