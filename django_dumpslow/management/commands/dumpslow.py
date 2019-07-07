@@ -81,10 +81,13 @@ class Command(BaseCommand):
         if order not in ('at', 'count', 'average'):
             raise CommandError('Invalid sort order %r' % options['order'])
 
-        client = redis.Redis(
-            host=settings.REDIS_HOST,
-            port=settings.REDIS_PORT,
-        )
+        if getattr(settings, 'REDIS_URL', None):
+            client = redis.from_url(settings.REDIS_URL)
+        else:
+            client = redis.Redis(
+                host=settings.REDIS_HOST,
+                port=settings.REDIS_PORT,
+            )
 
         data = {}
         results = client.zrangebyscore(

@@ -56,10 +56,13 @@ class LogLongRequestMiddleware(MiddlewareMixin):
         if time_taken < getattr(settings, 'DUMPSLOW_LONG_REQUEST_TIME', 1):
             return response
 
-        client = redis.Redis(
-            host=settings.REDIS_HOST,
-            port=settings.REDIS_PORT,
-        )
+        if getattr(settings, 'REDIS_URL', None):
+            client = redis.from_url(settings.REDIS_URL)
+        else:
+            client = redis.Redis(
+                host=settings.REDIS_HOST,
+                port=settings.REDIS_PORT,
+            )
 
         map_key = '%s\n%.3f' % (view, time_taken)
         mapping = { map_key: self.local.start_time }
