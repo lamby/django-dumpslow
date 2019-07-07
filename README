@@ -34,7 +34,7 @@ functionality.
 Installation
 ------------
 
-1. Get Dedis working in django, it's required. You'll need a redis server
+1. Get Redis working in django, it's required. You'll need a redis server
    running and REDIS_HOST and REDIS_PORT set in settings.py
 
 2. Add the following to INSTALLED_APPS in settings.py::
